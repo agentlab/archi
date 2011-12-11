@@ -155,7 +155,7 @@ public abstract class AbstractArchimatePropertySection extends AbstractPropertyS
         // Text
         Text textControl = createSingleTextControl(parent, SWT.NONE);
         
-        PropertySectionTextControl textName = new PropertySectionTextControl(textControl, IArchimatePackage.Literals.NAMEABLE__NAME) {
+        PropertySectionTextControl textName = new PropertySectionPlainTextControl(textControl, IArchimatePackage.Literals.NAMEABLE__NAME) {
             @Override
             protected void textChanged(String oldText, String newText) {
                 if(isAlive()) {
@@ -181,7 +181,7 @@ public abstract class AbstractArchimatePropertySection extends AbstractPropertyS
         // Text
         StyledTextControl styledTextControl = createStyledTextControl(parent, SWT.NONE);
         
-        PropertySectionTextControl textDoc = new PropertySectionTextControl(styledTextControl.getControl(), IArchimatePackage.Literals.DOCUMENTABLE__DOCUMENTATION) {
+        PropertySectionTextControl textDoc = new PropertySectionStyledTextControl(styledTextControl.getControl(), IArchimatePackage.Literals.DOCUMENTABLE__DOCUMENTATION) {
             @Override
             protected void textChanged(String oldText, String newText) {
                 if(isAlive()) {
@@ -208,6 +208,7 @@ public abstract class AbstractArchimatePropertySection extends AbstractPropertyS
         textControl.addVerifyListener(new VerifyListener() {
             @Override
             public void verifyText(VerifyEvent e) {
+                // TODO put this somewhere
                 e.text = e.text.replaceAll("(\\r\\n|\\r|\\n)", " ");
             }
         });

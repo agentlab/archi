@@ -9,14 +9,10 @@ package uk.ac.bolton.archimate.editor.propertysections;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Text;
 
 import uk.ac.bolton.archimate.editor.utils.StringUtils;
 
@@ -26,29 +22,47 @@ import uk.ac.bolton.archimate.editor.utils.StringUtils;
  * 
  * @author Phillip Beauvoir
  */
-public abstract class PropertySectionTextControl implements FocusListener {
+public abstract class PropertySectionTextControl {
     
-    private Control fTextControl;
-    private String fHint;
     private EObject fDataElement;
     private EStructuralFeature fFeature;
     
     private Color fTextForegroundColor;
     
+    private String fHint;
     private boolean fHintShowing;
     
     private static final Color greyColor = new Color(null, 188, 188, 188);
-
-    public PropertySectionTextControl(Control textControl, EStructuralFeature feature) {
-        fTextControl = textControl;
-        fTextForegroundColor = fTextControl.getForeground();
+    
+    private Listener fTextControlListener = new TextControlListener();
+    
+    private class TextControlListener implements Listener {
+        public void handleEvent(Event event) {
+            switch(event.type) {
+                case SWT.FocusIn:
+                    activate();
+                    break;
+                case SWT.FocusOut:
+                    deactivate();
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    
+    protected void init(EStructuralFeature feature) {
         fFeature = feature;
+
+        fTextForegroundColor = getTextControl().getForeground();
         
-        textControl.addFocusListener(this);
+        // Use Focus events not Activate events. Activate events are sent twice.
+        getTextControl().addListener(SWT.FocusIn, fTextControlListener);
+        getTextControl().addListener(SWT.FocusOut, fTextControlListener);
         
         // Listen for Return keypress on SINGLE text controls
-        if((textControl.getStyle() & SWT.SINGLE) != 0) {
-            textControl.addListener(SWT.DefaultSelection, new Listener() {
+        if((getTextControl().getStyle() & SWT.SINGLE) != 0) {
+            getTextControl().addListener(SWT.DefaultSelection, new Listener() {
                 public void handleEvent(Event e) {
                     updateText();
                 }
@@ -60,10 +74,6 @@ public abstract class PropertySectionTextControl implements FocusListener {
         fHint = hint;
     }
     
-    public Control getTextControl() {
-        return fTextControl;
-    }
-    
     public void refresh(EObject dataElement) {
         fDataElement = dataElement;
         
@@ -73,7 +83,7 @@ public abstract class PropertySectionTextControl implements FocusListener {
             text = (String)fDataElement.eGet(fFeature);
         }
         
-        if(!StringUtils.isSet(text) && !fTextControl.isFocusControl()) { // Don't do this if text control has focus
+        if(!StringUtils.isSet(text) && !getTextControl().isFocusControl()) { // Don't do this if text control has focus
             showHintText();
         }
         else if(!getText().equals(text)) {
@@ -81,15 +91,13 @@ public abstract class PropertySectionTextControl implements FocusListener {
         }
     }
 
-    @Override
-    public void focusGained(FocusEvent e) {
+    protected void activate() {
         if(fHintShowing) {
             showNormalText(""); // clear hint text
         }
     }
 
-    @Override
-    public void focusLost(FocusEvent e) {
+    protected void deactivate() {
         updateText();
         
         String newText = getText();
@@ -111,9 +119,9 @@ public abstract class PropertySectionTextControl implements FocusListener {
         }
     }
     
-    private void showHintText() {
+    protected void showHintText() {
         if(fHint != null) {
-            fTextControl.setForeground(greyColor);
+            getTextControl().setForeground(greyColor);
             setText(fHint);
             fHintShowing = true;
         }
@@ -122,36 +130,34 @@ public abstract class PropertySectionTextControl implements FocusListener {
         }
     }
     
-    private void showNormalText(String text) {
-        fTextControl.setForeground(fTextForegroundColor);
+    protected void showNormalText(String text) {
+        getTextControl().setForeground(fTextForegroundColor);
         setText(StringUtils.safeString(text));
         fHintShowing = false;
     }
     
-    private String getText() {
-        if(fTextControl instanceof Text) {
-            return ((Text)fTextControl).getText();
-        }
-        if(fTextControl instanceof StyledText) {
-            return ((StyledText)fTextControl).getText();
-        }
-        return null;
-    }
-    
-    private void setText(String s) {
-        if(fTextControl instanceof Text) {
-            ((Text)fTextControl).setText(s);
-        }
-        if(fTextControl instanceof StyledText) {
-            ((StyledText)fTextControl).setText(s);
-        }
-    }
-
     /**
-     * Over-ride this to react to text changes
-     * @param oldText
-     * @param newText
+     * Over-ride this to respond to text changes
+     * @param oldText The old text in the text control
+     * @param newText The new text in the text control
      */
     protected void textChanged(String oldText, String newText) {
     }
+
+    /**
+     * @return The actual Text Control used
+     */
+    public abstract Control getTextControl();
+    
+    /**
+     * @return the text in the Text Control
+     */
+    protected abstract String getText();
+    
+    /**
+     * Set the text in the Text Control
+     * @param text
+     */
+    protected abstract void setText(String text);
+
 }

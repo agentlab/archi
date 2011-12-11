@@ -84,12 +84,15 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PlatformUI;
 
 import uk.ac.bolton.archimate.editor.model.commands.EObjectFeatureCommand;
 import uk.ac.bolton.archimate.editor.model.commands.EObjectNonNotifyingCompoundCommand;
 import uk.ac.bolton.archimate.editor.ui.IArchimateImages;
 import uk.ac.bolton.archimate.editor.ui.ImageFactory;
+import uk.ac.bolton.archimate.editor.ui.components.CellEditorActionHandlerManager;
 import uk.ac.bolton.archimate.editor.ui.components.ExtendedTitleAreaDialog;
 import uk.ac.bolton.archimate.editor.ui.components.StringComboBoxCellEditor;
 import uk.ac.bolton.archimate.editor.utils.HTMLUtils;
@@ -766,14 +769,34 @@ public class UserPropertiesSection extends AbstractArchimatePropertySection {
     }
 
     /**
-     * Value Editor
+     * Text Cell Value Editor
      */
     private class ValueEditingSupport extends EditingSupport {
-        TextCellEditor cellEditor;
+        private TextCellEditor cellEditor;
+        private CellEditorActionHandlerManager cellEditorActionHandlerManager;
 
         public ValueEditingSupport(ColumnViewer viewer) {
             super(viewer);
+            
             cellEditor = new TextCellEditor((Composite)viewer.getControl());
+            
+            cellEditor.getControl().addListener(SWT.Activate, new Listener() {
+                @Override
+                public void handleEvent(Event event) {
+                    IActionBars actionBars = ((IViewSite)PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                            .getActivePage().getActivePart().getSite()).getActionBars();
+                    cellEditorActionHandlerManager = new CellEditorActionHandlerManager(actionBars, cellEditor);
+                }
+            });
+            
+            cellEditor.getControl().addListener(SWT.Deactivate, new Listener() {
+                @Override
+                public void handleEvent(Event event) {
+                    if(cellEditorActionHandlerManager != null) {
+                        cellEditorActionHandlerManager.dispose();
+                    }
+                }
+            });
         }
 
         @Override

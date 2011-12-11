@@ -13,13 +13,14 @@ import org.eclipse.draw2d.text.TextFlow;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.tools.CellEditorLocator;
 import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+
 
 /**
  * A DirectEdit manager to be used for labels that grow in size as you type in them.
@@ -36,14 +37,16 @@ public class LabelDirectEditManager extends AbstractDirectEditManager {
     private IFigure fTextFigure;
 
     public LabelDirectEditManager(GraphicalEditPart source, IFigure textFigure) {
-        super(source, TextCellEditor.class, null);
+        super(source, ExtendedTextCellEditor.class, null);
         fTextFigure = textFigure;
         setLocator(new TextCellEditorLocator());
     }
-
-    /**
-     * @see org.eclipse.gef.tools.DirectEditManager#initCellEditor()
-     */
+    
+    @Override
+    protected CellEditor createCellEditorOn(Composite composite) {
+        return new ExtendedTextCellEditor(composite, SWT.NONE);
+    }
+    
     @Override
     protected void initCellEditor() {
         super.initCellEditor();
@@ -55,6 +58,9 @@ public class LabelDirectEditManager extends AbstractDirectEditManager {
          */
         fVerifyListener = new VerifyListener() {
             public void verifyText(VerifyEvent event) {
+                // TODO Put this somewhere
+                event.text = event.text.replaceAll("(\\r\\n|\\r|\\n)", " ");
+
                 Text text = (Text)getCellEditor().getControl();
                 String oldText = text.getText();
                 String leftText = oldText.substring(0, event.start);

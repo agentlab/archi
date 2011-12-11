@@ -87,7 +87,7 @@ public class ArchimateModelSection extends AbstractArchimatePropertySection {
         // Text
         StyledTextControl styledTextControl = createStyledTextControl(parent, SWT.NONE);
         
-        fTextPurpose = new PropertySectionTextControl(styledTextControl.getControl(), IArchimatePackage.Literals.ARCHIMATE_MODEL__PURPOSE) {
+        fTextPurpose = new PropertySectionStyledTextControl(styledTextControl.getControl(), IArchimatePackage.Literals.ARCHIMATE_MODEL__PURPOSE) {
             @Override
             protected void textChanged(String oldText, String newText) {
                 if(isAlive()) {

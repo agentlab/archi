@@ -46,7 +46,7 @@ public class TextContentSection extends AbstractArchimatePropertySection {
     
     private ITextContent fTextContent;
     
-    private PropertySectionTextControl fTextContentControl;
+    private PropertySectionStyledTextControl fTextContentControl;
     
     @Override
     protected void createControls(Composite parent) {
@@ -54,7 +54,7 @@ public class TextContentSection extends AbstractArchimatePropertySection {
         
         StyledTextControl styledTextControl = createStyledTextControl(parent, SWT.NONE);
         
-        fTextContentControl = new PropertySectionTextControl(styledTextControl.getControl(), IArchimatePackage.Literals.TEXT_CONTENT__CONTENT) {
+        fTextContentControl = new PropertySectionStyledTextControl(styledTextControl.getControl(), IArchimatePackage.Literals.TEXT_CONTENT__CONTENT) {
             @Override
             protected void textChanged(String oldText, String newText) {
                 if(isAlive()) {

@@ -18,8 +18,11 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.PlatformUI;
 
-import uk.ac.bolton.archimate.editor.utils.PlatformUtils;
+import uk.ac.bolton.archimate.editor.ui.components.TextActionHandler;
 import uk.ac.bolton.archimate.editor.views.tree.commands.RenameCommandHandler;
 import uk.ac.bolton.archimate.model.INameable;
 
@@ -33,6 +36,9 @@ import uk.ac.bolton.archimate.model.INameable;
 public class TreeCellEditor {
     
     private Tree fTree;
+    
+    private TextActionHandler fTextActionHandler;
+    private IActionBars fActionBars;
     
     // Track last item if we are allowing edit on click
     private TreeItem fLastItem;
@@ -53,16 +59,6 @@ public class TreeCellEditor {
     public TreeCellEditor(Tree tree) {
         fTree = tree;
         fEditor = new TreeEditor(fTree);
-       
-        // Mac Cocoa Context Menu doesn't send FocusOut
-        if(PlatformUtils.isMacCocoa()) {
-            fTree.addListener(SWT.MenuDetect, new Listener() {
-                @Override
-                public void handleEvent(Event event) {
-                    finaliseEdit();
-                }
-            });
-        }
         
         // There's just too many problems with this
         if(EDIT_ON_CLICK) {
@@ -140,11 +136,14 @@ public class TreeCellEditor {
                 @Override
                 public void handleEvent(Event event) {
                     switch(event.type) {
-                        case SWT.FocusOut:
+                        case SWT.Deactivate:
                             finaliseEdit();
                             break;
 
                         case SWT.Verify:
+                            // TODO put this somewhere
+                            event.text = event.text.replaceAll("(\\r\\n|\\r|\\n)", " ");
+                            
                             String newText = fText.getText();
                             String leftText = newText.substring(0, event.start);
                             String rightText = newText.substring(event.end, newText.length());
@@ -179,7 +178,7 @@ public class TreeCellEditor {
                 }
             };
             
-            fText.addListener(SWT.FocusOut, textListener);
+            fText.addListener(SWT.Deactivate, textListener);
             fText.addListener(SWT.Traverse, textListener);
             fText.addListener(SWT.Verify, textListener);
             
@@ -195,6 +194,16 @@ public class TreeCellEditor {
         
         // Store last item even if null
         fLastItem = item;
+        
+        // Active Part Site will always be the TreeView
+        fActionBars = ((IViewSite)PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                       .getActivePage()
+                       .getActivePart()
+                       .getSite()).getActionBars();
+        
+        fTextActionHandler = new TextActionHandler(fActionBars);
+        fTextActionHandler.addText(fText);
+        fActionBars.updateActionBars();
     }
     
     private void finaliseEdit() {
@@ -224,6 +233,11 @@ public class TreeCellEditor {
     }
     
     private void disposeEditor() {
+        if(fTextActionHandler != null) {
+            fTextActionHandler.removeText(fText);
+            fTextActionHandler.dispose();
+        }
+
         if(fComposite != null && !fComposite.isDisposed()) {
             fComposite.dispose();
             fComposite = null;

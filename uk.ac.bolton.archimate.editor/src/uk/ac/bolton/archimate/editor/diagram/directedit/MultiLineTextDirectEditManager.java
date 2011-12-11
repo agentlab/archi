@@ -1,3 +1,9 @@
+/*******************************************************************************
+ * Copyright (c) 2011 Bolton University, UK.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the License
+ * which accompanies this distribution in the file LICENSE.txt
+ *******************************************************************************/
 package uk.ac.bolton.archimate.editor.diagram.directedit;
 
 import org.eclipse.draw2d.IFigure;
@@ -5,7 +11,6 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.tools.CellEditorLocator;
 import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
@@ -23,7 +28,7 @@ import uk.ac.bolton.archimate.model.ITextContent;
 public class MultiLineTextDirectEditManager extends AbstractDirectEditManager {
     
     public MultiLineTextDirectEditManager(GraphicalEditPart source) {
-        super(source, MultiLineCellEditor.class, null);
+        super(source, null, null);
         setLocator(new MultiLineCellEditorLocator());
     }
 
@@ -46,7 +51,7 @@ public class MultiLineTextDirectEditManager extends AbstractDirectEditManager {
             }
         }
         
-        return new MultiLineCellEditor(composite, alignment);
+        return new ExtendedTextCellEditor(composite, SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | alignment);
     }
 
     @Override
@@ -78,11 +83,4 @@ public class MultiLineTextDirectEditManager extends AbstractDirectEditManager {
             text.setBounds(rect.x + 5, rect.y + 5, rect.width, rect.height);
         }
     }
-    
-    class MultiLineCellEditor extends TextCellEditor {
-        public MultiLineCellEditor(Composite composite, int style) {
-            super(composite, SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | style);
-        }
-    }
-
 }
