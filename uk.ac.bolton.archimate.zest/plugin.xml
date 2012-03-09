@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            id="uk.ac.bolton.archimate.zest.actionSet"
+            label="Zest"
+            visible="true">
+         <action
+               class="uk.ac.bolton.archimate.zest.ShowZestViewAction"
+               definitionId="uk.ac.bolton.archimate.zest.action.showZestView"
+               icon="img/icon.png"
+               id="uk.ac.bolton.archimate.zest.showZestView"
+               label="Visualiser"
+               menubarPath="window/show_view_append"
+               style="push"
+               toolbarPath="toolbar_views/append">
+         </action>
+      </actionSet>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="uk.ac.bolton.archimate.zest.action.showZestView"
+            schemeId="uk.ac.bolton.archimate.editor.keybindings"
+            sequence="M3+6">
+      </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            id="uk.ac.bolton.archimate.zest.action.showZestView"
+            name="Show Zest View">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            class="uk.ac.bolton.archimate.zest.ZestView"
+            icon="img/icon.png"
+            id="uk.ac.bolton.archimate.zest.zestView"
+            name="Visualiser"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="*">
+         <view
+               id="uk.ac.bolton.archimate.zest.zestView"
+               minimized="false"
+               relationship="stack"
+               relative="uk.ac.bolton.archimate.editor.propertiesView">
+         </view>
+      </perspectiveExtension>
+   </extension>
+
+</plugin>
